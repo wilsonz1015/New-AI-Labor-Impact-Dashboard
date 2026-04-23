@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Occupation Impact Dashboard - Chat Only</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+<div class="hdr"><h1>AI Occupation Impact Explorer</h1><p>Claude.ai chat task exposure across O*NET occupations, BLS labor shortage scorecards, and an AI labor impact quadrant</p></div>
+<div class="contact-note"><strong>Questions?</strong> Please direct any questions to Wilson Zhang at <a href="mailto:wilson.z1015@gmail.com" style="color:var(--blue);text-decoration:none">wilson.z1015@gmail.com</a>.</div>
+<div class="nav" id="nav"><button class="nb on" data-v="sum">Summary AI Labor Impact</button><button class="nb" data-v="tbl">AI Augmentation vs. Automation</button><button class="nb" data-v="ls">Labor Shortage Scorecard</button><button class="nb" data-v="met">Methodology</button></div>
+<div id="vTbl">
+<div class="tab-summary"><b>AI Augmentation vs. Automation:</b> This tab shows how each occupation’s AI-exposed tasks currently net out between augmentation and automation, along with coverage, category, and task-level drill-downs.</div>
+<div class="ctrl">
+<div class="sbox"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="qry" type="text" placeholder="Search occupations by name or O*NET code..."></div>
+<div>
+  <div class="src-note" id="srcP"><strong>Chat only</strong> = Claude.ai consumer usage</div>
+</div>
+
+
+</div>
+<div class="sts" id="sts"></div>
+<div class="main">
+<div class="cnt" id="cnt"></div>
+<div class="tw"><div class="tsc"><table>
+<thead id="mainTh"><tr></tr></thead>
+<tbody id="tb"></tbody>
+</table></div></div>
+<a class="sl" href="https://www.onetonline.org/" target="_blank" rel="noopener" style="margin-top:20px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>O*NET Online</a>
+</div></div>
+
+
+<div id="vLs" style="display:none">
+<div class="tab-summary"><b>Labor Shortage Scorecard:</b> This tab ranks occupations by labor shortage pressure using projected employment growth, recent wage growth, and recent employment growth from the workbook.</div>
+<div class="ctrl">
+<div class="sbox"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="lsQry" type="text" placeholder="Search labor shortage occupations by name..."></div>
+</div>
+<div class="main">
+<div class="cnt" id="lsCnt"></div>
+<div class="tw"><div class="tsc"><table>
+<thead id="lsTh"><tr></tr></thead>
+<tbody id="lsTb"></tbody>
+</table></div></div>
+</div></div>
+
+<div id="vSum" style="display:none">
+<div class="tab-summary"><b>Summary AI Labor Impact:</b> This tab maps occupations by net AI impact and labor shortage pressure, then highlights the jobs most likely to benefit from AI and the jobs most exposed to downside.</div>
+<div class="ctrl">
+<div>
+  <div class="src-note" id="sumSrcP"><strong>Chat only</strong> = Claude.ai consumer usage. Horizontal axis = AI augmentation vs. automation score. Vertical axis = labor shortage composite score. Hover any point for the occupation, and click a point to open the AI task drill-down.</div>
+</div>
+</div>
+<div class="main">
+<div class="sum-head">
+  <div>
+    <div class="sct" style="margin-bottom:6px">AI Labor Impact Quadrant</div>
+    <div class="scs" id="sumNote">Loading chart...</div>
+  </div>
+  <div class="sum-legend">
+    <div class="lgd"><span class="sw" style="background:var(--grn)"></span>Top AI tailwinds</div>
+    <div class="lgd"><span class="sw" style="background:var(--red)"></span>Top AI headwinds</div>
+    <div class="lgd"><span class="sw" style="background:var(--t2)"></span>All other occupations</div>
+  </div>
+</div>
+<div class="sum-wrap">
+  <div class="quad-card" id="quadCard">
+    <div class="quad-tooltip" id="sumTip"></div>
+    <svg id="quadSvg" viewBox="0 0 1200 620" preserveAspectRatio="xMidYMid meet"></svg>
+  </div>
+  <div class="sum-grid">
+    <div class="sum-list-card">
+      <div class="sct">Top 20 jobs that benefit from AI</div>
+      <div class="scs">Higher augmentation vs. automation score and higher labor shortage score. Columns show the AI augmentation vs. automation score, AI percentile, labor shortage score, labor percentile, and the sum of percentiles.</div>
+      <div class="sum-list" id="sumBenefit"></div>
+    </div>
+    <div class="sum-list-card">
+      <div class="sct">Top 20 jobs that suffer the most from AI</div>
+      <div class="scs">Lower AI augmentation vs. automation score and lower labor shortage score. Columns show the AI augmentation vs. automation score, AI percentile, labor shortage score, labor percentile, and the sum of percentiles. Lower percentile sums indicate more downside exposure.</div>
+      <div class="sum-list" id="sumSuffer"></div>
+    </div>
+  </div>
+</div>
+</div></div>
+
+<div id="vMet" style="display:none"><div class="mth">
+<div class="mth-intro">
+  <div class="mth-kicker">Methodology</div>
+  <p>This dashboard combines Claude.ai chat interaction data, O*NET task structure, and BLS labor market signals to show where AI looks more like a productivity tailwind versus a displacement risk.</p>
+</div>
+
+<h2 id="met-contents">Contents</h2>
+<p>Use the links below to jump to the methodology for each dashboard tab.</p>
+<div class="mth-toc">
+  <a class="mth-toc-item" href="#met-summary-ai"><strong>Summary AI Labor Impact</strong><span>Plots each occupation on a two-axis view: net AI augmentation vs. automation on the x-axis and labor shortage pressure on the y-axis, with ranked lists of top tailwinds and headwinds.</span></a>
+  <a class="mth-toc-item" href="#met-ai-score"><strong>AI Augmentation vs. Automation</strong><span>Shows the underlying AI score for each occupation using task-level Claude interaction patterns, task importance, task relevance, and task frequency.</span></a>
+  <a class="mth-toc-item" href="#met-labor-shortage"><strong>Labor Shortage Scorecard</strong><span>Scores occupations on shortage pressure using projected employment growth, recent wage growth, and recent employment growth from the workbook.</span></a>
+  <a class="mth-toc-item" href="#met-data-sources"><strong>Data Sources</strong><span>Lists the source datasets and workbook inputs used to build the dashboard, along with what each source contributes.</span></a>
+</div>
+
+<section id="met-summary-ai" class="mth-section">
+  <h2>Summary AI Labor Impact</h2>
+  <p>This tab maps each occupation using two existing scores: the occupation’s AI augmentation-vs.-automation score on the horizontal axis and the labor shortage composite score on the vertical axis.</p>
+  <div class="fm">x-axis = occupation_ai_score
+<br>y-axis = labor_shortage_composite_score</div>
+  <p>The chart itself does not create a new blended score; instead, it visually combines the scoring systems from the other two analytical tabs so you can see where shortage pressure and AI exposure reinforce each other.</p>
+  <h3>How the ranked lists are built</h3>
+  <p>The “benefit” list favors occupations with positive AI scores and high shortage scores, while the “suffer” list favors occupations with negative AI scores and low shortage scores. Rankings are based on combined percentile position across the two plotted axes.</p>
+  <div class="fm">benefit_rank = percentile(ai_score) + percentile(shortage_score)
+<br>suffer_rank = (1 - percentile(ai_score)) + (1 - percentile(shortage_score))</div>
+  <p>That means a job rises into the top-benefit list only if it is strong on both augmentation and shortage pressure, and rises into the top-suffer list only if it is weak on both.</p>
+  <a class="mth-jump" href="#met-contents">Back to contents</a>
+</section>
+
+<section id="met-ai-score" class="mth-section">
+  <h2>AI Augmentation vs. Automation</h2>
+  <p>This tab shows, for each occupation, whether currently observed Claude usage patterns lean more toward augmenting workers or automating away the work they do.</p>
+
+  <h3>Occupation score</h3>
+  <p>The occupation score is a weighted average of task scores, where more frequently performed tasks matter more than rare tasks.</p>
+  <div class="fm">occupation_score = Sum(task_score x freq_weight) / Sum(freq_weight)
+<br><br>freq_weight = log(1 + annual_frequency)</div>
+  <p>O*NET frequency ratings are converted into estimated annual occurrences, then compressed with a log transform so daily work counts more than yearly work without letting ultra-frequent tasks dominate the full occupation score.</p>
+
+  <div class="note"><strong>Coverage threshold:</strong> An occupation needs at least 2 AI-exposed tasks and at least 10.1% task coverage to receive a non-zero AI score, which helps avoid misleading scores from very sparse AI data.</div>
+
+  <h3>Task score</h3>
+  <p>Each task score depends on whether Claude is being used in more augmentation-like or automation-like ways, and on how central that task is to the occupation.</p>
+
+  <h4>High-importance tasks (importance &gt; 3.5)</h4>
+  <p>For tasks that define the core of the job, augmentation is positive for the worker and automation is negative.</p>
+  <div class="fm">task_score = 100 x (relevance / 100) x importance_weight x (augmentation_share - automation_share)</div>
+
+  <h4>Lower-importance tasks (importance &le; 3.5)</h4>
+  <p>For more peripheral work, offloading the task is generally treated as beneficial because it frees up time for more valuable work.</p>
+  <div class="fm">task_score = 100 x (relevance / 100) x max(automation_share, augmentation_share) x relief
+<br><br>relief = max(0, (3.5 - importance) / 2.5)</div>
+
+  <h4>Importance scaling</h4>
+  <div class="fm">importance_weight = (importance - 1) / 4 &nbsp;&nbsp;[range: 0 to 1]</div>
+  <p>Importance uses O*NET’s 1–5 scale, while relevance uses O*NET’s 0–100 task relevance score.</p>
+
+  <h3>Interaction classification and shares</h3>
+  <p>Anthropic’s Economic Index classifies Claude conversations into five interaction types. For this dashboard, Directive and Feedback Loop are grouped as automation, while Task Iteration, Validation, and Learning are grouped as augmentation.</p>
+  <div class="fm">automation_share = (Directive + Feedback Loop) / total
+<br>augmentation_share = (Task Iteration + Validation + Learning) / total
+<br><br>total = all classified + unclassified interactions</div>
+  <p>Unclassified interactions dilute both shares equally rather than favoring one side.</p>
+
+  <h3>Human-required task filter</h3>
+  <p>Tasks that still fundamentally require an in-person human presence, embodied performance, or physical execution are excluded from AI exposure even when some Claude interactions are observed for them. This keeps the score focused on work that can plausibly be reshaped by current AI usage.</p>
+  <a class="mth-jump" href="#met-contents">Back to contents</a>
+</section>
+
+<section id="met-labor-shortage" class="mth-section">
+  <h2>Labor Shortage Scorecard</h2>
+  <p>This tab scores each occupation’s shortage pressure using the workbook’s three-pillar scorecard: projected employment growth, recent wage growth, and recent actual employment growth.</p>
+
+  <h3>Composite score</h3>
+  <div class="fm">composite_score = (projected_employment_score + wage_score + actual_employment_score) / 3</div>
+  <p>Each pillar is scaled to a 1–5 range using the workbook’s percentile-rank logic, and the dashboard keeps the workbook’s equal one-third weighting across the three pillars.</p>
+
+  <h4>Projected employment pillar</h4>
+  <div class="fm">projected_employment_cagr = (projected_emp_2034 / projected_emp_2024)^(1/10) - 1
+<br><br>projected_employment_score = 1 + 4 x PERCENTRANK.INC(all_projected_cagrs, occupation_projected_cagr)</div>
+  <p>This uses the BLS 2024–2034 employment projection for the matched occupation. If no projection row is matched, the pillar stays blank.</p>
+
+  <h4>Wage pillar</h4>
+  <div class="fm">wage_cagr_scorecard = use 2019–2024 CAGR if available;
+<br>otherwise use 2021–2024 CAGR;
+<br>otherwise use 2023–2024 CAGR
+<br><br>wage_score = 1 + 4 x PERCENTRANK.INC(all_wage_cagrs, occupation_wage_cagr)</div>
+  <p>The dashboard surfaces the underlying wage series so the user can see the actual values behind the score and which fallback time window the workbook used.</p>
+
+  <h4>Actual employment pillar</h4>
+  <div class="fm">employment_cagr_scorecard = use 2019–2024 CAGR if available;
+<br>otherwise use 2021–2024 CAGR;
+<br>otherwise use 2023–2024 CAGR
+<br><br>actual_employment_score = 1 + 4 x PERCENTRANK.INC(all_employment_cagrs, occupation_employment_cagr)</div>
+  <p>The drill-down also shows the underlying 2019–2024 employment series and the time window used for the score.</p>
+  <a class="mth-jump" href="#met-contents">Back to contents</a>
+</section>
+
+<section id="met-data-sources" class="mth-section">
+  <h2>Data Sources</h2>
+  <div class="src-grid">
+    <div class="src-item"><div class="src-label">Anthropic Economic Index</div><div class="src-desc">Claude.ai consumer chat usage classified by O*NET task and interaction type.<br><a href="https://huggingface.co/datasets/Anthropic/EconomicIndex/tree/main/release_2026_03_24" target="_blank">huggingface.co/datasets/Anthropic/EconomicIndex</a></div></div>
+    <div class="src-item"><div class="src-label">O*NET Task Ratings</div><div class="src-desc">U.S. Department of Labor occupational database with task statements and ratings for importance, relevance, and frequency that are used to weight the AI score.<br><a href="https://www.onetcenter.org/dictionary/20.1/excel/task_ratings.html" target="_blank">onetcenter.org/dictionary/20.1/excel/task_ratings.html</a></div></div>
+    <div class="src-item"><div class="src-label">BLS OEWS history</div><div class="src-desc">Historical occupation-level wage and employment series embedded from the workbook’s scorecard inputs and used for the wage and actual employment pillars.</div></div>
+    <div class="src-item"><div class="src-label">BLS 2024–2034 projections</div><div class="src-desc">Projected 2024 employment, 2034 employment, numeric change, CAGR, and annual openings taken from the workbook’s projection source sheet.</div></div>
+    
+  </div>
+  <p>All scores in this dashboard reflect <em>observed current usage patterns</em> in the underlying datasets, not a forecast of ultimate AI capability or guaranteed job outcomes.</p>
+  <a class="mth-jump" href="#met-contents">Back to contents</a>
+</section>
+</div></div>
+
+<div class="ov" id="ov"><div class="pnl" id="pnl"></div></div>
+<script src="data/dashboard-data.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>
